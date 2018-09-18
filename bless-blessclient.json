@@ -1,0 +1,1327 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "EC2 Role Test",
+  "Metadata": {
+    "AWS::CloudFormation::Interface": {
+      "ParameterGroups": [
+        {
+          "Label": {
+            "default": "Amazon EC2 Configuration"
+          },
+          "Parameters": [
+            "ChosenVPC",
+            "ChosenSubnet",
+            "SSHnetwork",
+            "VCPCIDR",
+            "UseEC2KeyPair",
+            "EC2KeyPair"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Private Key Configuration"
+          },
+          "Parameters": [
+            "KeyAlias",
+            "KeyPwd"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Other Configuration"
+          },
+          "Parameters": [
+            "NewUser",
+            "DeploySecondEC2",
+            "AccessKey",
+            "SecretAccessKey"
+          ]
+        }
+      ]
+    }
+  },
+  "Parameters": {
+    "ChosenVPC": {
+      "Description": "Choose the VPC to deploy in to",
+      "Type": "AWS::EC2::VPC::Id"
+    },
+    "ChosenSubnet": {
+      "Description": "Choose the Subnet to deploy in to",
+      "Type": "AWS::EC2::Subnet::Id"
+    },
+    "SSHnetwork": {
+      "Description": "Enter a CIDR Address to restrict SSH. Use 0.0.0.0/0 for world or an IP range",
+      "Type": "String",
+      "Default": "204.246.162.43/32",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "must be a valid CIDR range of the form x.x.x.x/x."
+    },
+    "VCPCIDR": {
+      "Description": "Enter a CIDR Address to restrict SSH. Use 0.0.0.0/0 for world or an IP range",
+      "Type": "String",
+      "Default": "172.31.0.0/16",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "must be a valid CIDR range of the form x.x.x.x/x."
+    },
+    "KeyAlias": {
+      "Description": "Alias for KMS key, Stack Name will be appended to alias",
+      "Type": "String",
+      "Default": "KMS-Key"
+    },
+    "KeyPwd": {
+      "NoEcho": "true",
+      "Description": "The KMS key password, 1-64 characters.",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "64",
+      "AllowedPattern": "^[a-zA-Z0-9]*$"
+    },
+    "UseEC2KeyPair": {
+      "AllowedValues": [
+        "True",
+        "False"
+      ],
+      "Default": "True",
+      "Description": "To include a Key Pair for the EC2 instances, set this parameter to true",
+      "Type": "String"
+    },
+    "DeploySecondEC2": {
+      "AllowedValues": [
+        "True",
+        "False"
+      ],
+      "Default": "True",
+      "Description": "To deploy a second EC2, set this parameter to true",
+      "Type": "String"
+    },
+    "EC2KeyPair": {
+      "Description": "Amazon EC2 Key Pair",
+      "Type": "AWS::EC2::KeyPair::KeyName"
+    },
+    "NewUser": {
+      "Description": "A new user for the EC2 instance, ensure it is your valid AWS account username",
+      "Type": "String",
+      "Default": "alannewc"
+    },
+    "AccessKey": {
+      "Description": "AccessKey",
+      "Type": "String"
+    },
+    "SecretAccessKey": {
+      "Description": "SecretAccessKey",
+      "Type": "String"
+    }
+  },
+  "Mappings": {
+    "RegionMap": {
+      "ap-northeast-1": {
+        "HVM64": "ami-08847abae18baa040"
+      },
+      "ap-northeast-2": {
+        "HVM64": "ami-012566705322e9a8e"
+      },
+      "ap-south-1": {
+        "HVM64": "ami-00b6a8a2bd28daf19"
+      },
+      "ap-southeast-1": {
+        "HVM64": "ami-01da99628f381e50a"
+      },
+      "ap-southeast-2": {
+        "HVM64": "ami-00e17d1165b9dd3ec"
+      },
+      "ca-central-1": {
+        "HVM64": "ami-ce1b96aa"
+      },
+      "eu-central-1": {
+        "HVM64": "ami-0f5dbc86dd9cbf7a8"
+      },
+      "eu-west-1": {
+        "HVM64": "ami-0bdb1d6c15a40392c"
+      },
+      "eu-west-2": {
+        "HVM64": "ami-e1768386"
+      },
+      "eu-west-3": {
+        "HVM64": "ami-06340c8c12baa6a09"
+      },
+      "sa-east-1": {
+        "HVM64": "ami-0ad7b0031d41ed4b9"
+      },
+      "us-east-1": {
+        "HVM64": "ami-04681a1dbd79675a5"
+      },
+      "us-east-2": {
+        "HVM64": "ami-0cf31d971a3ca20d6"
+      },
+      "us-west-1": {
+        "HVM64": "ami-0782017a917e973e7"
+      },
+      "us-west-2": {
+        "HVM64": "ami-6cd6f714"
+      }
+    }
+  },
+  "Resources": {
+    "MyEC2Instance": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "BlockDeviceMappings": [
+          {
+            "DeviceName": "/dev/sdm",
+            "Ebs": {
+              "DeleteOnTermination": "true",
+              "VolumeSize": "10",
+              "VolumeType": "gp2"
+            }
+          }
+        ],
+        "IamInstanceProfile": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "AWS::StackName"
+              },
+              "-EC2Role"
+            ]
+          ]
+        },
+        "ImageId": {
+          "Fn::FindInMap": [
+            "RegionMap",
+            {
+              "Ref": "AWS::Region"
+            },
+            "HVM64"
+          ]
+        },
+        "InstanceType": "t2.micro",
+        "KeyName": {
+          "Ref": "EC2KeyPair"
+        },
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "#!/bin/bash -xe\n",
+                "yum update -y\n",
+                "yum install python3 -y\n",
+                "yum install gcc -y\n",
+                "yum install libffi-devel -y\n",
+                "yum install openssl-devel -y\n",
+                "yum install python3-tkinter -y\n",
+                "yum install aws-cfn-bootstrap -y\n",
+                "pip3 install boto3\n",
+                "pip3 install decode\n",
+                "pip3 install pyyaml\n",
+                "pip3 install scipy\n",
+                "pip3 install matplotlib\n",
+                "pip3 install virtualenv\n",
+                "pip3 install xarray\n",
+                "pip3 install astropy\n",
+                "pip3 install sklearn\n",
+                "yum install python3-devel -y\n",
+                "yum install git -y\n",
+                "yum install docker -y\n",
+                "service docker start\n",
+                "usermod -a -G docker ec2-user\n",
+                "wget https://releases.hashicorp.com/terraform/0.11.8/terraform_0.11.8_linux_amd64.zip\n",
+                "unzip terraform_0.11.8_linux_amd64.zip\n",
+                "mv terraform /usr/local/bin/\n",
+                "wget https://github.com/gruntwork-io/terragrunt/releases/download/v0.16.8/terragrunt_linux_amd64\n",
+                "mv terragrunt_linux_amd64 /usr/local/bin/terragrunt\n",
+                "chmod 775 /usr/local/bin/terragrunt\n",
+                "cd /home/ec2-user/\n",
+                "git clone https://github.com/Netflix/bless.git\n",
+                "mkdir -m755 bless/lambda_configs\n",
+                "cd /home/ec2-user/bless\n",
+                "cd lambda_configs\n",
+                "ssh-keygen -t rsa -b 4096 -f bless-ca-key -C 'SSH CA Key' -N '",
+                {
+                  "Ref": "KeyPwd"
+                },
+                "'\n",
+                "chmod 444 bless-ca-key\n",
+                "adduser ",
+                {
+                  "Ref": "NewUser"
+                },
+                "\n",
+                "passwd -d ",
+                {
+                  "Ref": "NewUser"
+                },
+                "\n",
+                "usermod -aG wheel ",
+                {
+                  "Ref": "NewUser"
+                },
+                "\n",
+                "mkdir -m700 /home/",
+                {
+                  "Ref": "NewUser"
+                },
+                "/.ssh\n",
+                "touch /home/alannewc/.ssh/authorized_keys\n",
+                "chmod 600 /home/alannewc/.ssh/authorized_keys\n",
+                "cat /home/ec2-user/.ssh/authorized_keys >> /home/alannewc/.ssh/authorized_keys\n",
+                "chown alannewc:alannewc /home/alannewc/.ssh\n",
+                "chown alannewc:alannewc /home/alannewc/.ssh/authorized_keys\n",
+                "cd /home/",
+                {
+                  "Ref": "NewUser"
+                },
+                "\n",
+                "git clone https://github.com/Netflix/bless.git\n",
+                "mkdir -m755 bless/lambda_configs\n",
+                "echo '1: cd bless' > /home/ec2-user/steps.txt\n",
+                "echo '2: sudo su' >> /home/ec2-user/steps.txt\n",
+                "echo '3: python3 -m venv venv' >> /home/ec2-user/steps.txt\n",
+                "echo '4: source venv/bin/activate' >> /home/ec2-user/steps.txt\n",
+                "echo '5: make develop' >> /home/ec2-user/steps.txt\n",
+                "echo '6: make test' >> /home/ec2-user/steps.txt\n",
+                "echo '7: make lambda-deps' >> /home/ec2-user/steps.txt\n",
+                "echo '8: exit env' >> /home/ec2-user/steps.txt\n",
+                "echo '9:' >> /home/ec2-user/steps.txt\n",
+                "echo '10: ssh-keygen -t rsa -b 4096 -f bless-ca- -C \"SSH CA Key\"' >> /home/ec2-user/steps.txt\n",
+                "echo '10a: enter passphrase for step 9' >> /home/ec2-user/steps.txt\n",
+                "echo '11: ' >> /home/ec2-user/steps.txt\n",
+                "echo '' >> /home/ec2-user/steps.txt\n",
+                "echo '#!/usr/bin/env python3' > /home/ec2-user/key.py\n",
+                "echo 'import boto3' >> /home/ec2-user/key.py\n",
+                "echo 'import decode' >> /home/ec2-user/key.py\n",
+                "echo 'import base64' >> /home/ec2-user/key.py\n",
+                "echo 'import sys' >> /home/ec2-user/key.py\n",
+                "echo 'import os' >> /home/ec2-user/key.py\n",
+                "echo '' >> /home/ec2-user/key.py\n",
+                "echo 'def get_base64_key(keyid, plaintext):' >> /home/ec2-user/key.py\n",
+                "echo '    #region = os.environ[\"HOSTNAME\"].split(\".\")[1]' >> /home/ec2-user/key.py\n",
+                "echo '    region = sys.argv[3]' >> /home/ec2-user/key.py\n",
+                "echo '    client = boto3.client(\"kms\", region_name=region)' >> /home/ec2-user/key.py\n",
+                "echo '    response = client.encrypt(' >> /home/ec2-user/key.py\n",
+                "echo '    KeyId=keyid,' >> /home/ec2-user/key.py\n",
+                "echo '    Plaintext=plaintext' >> /home/ec2-user/key.py\n",
+                "echo '    )' >> /home/ec2-user/key.py\n",
+                "echo '    ciphertext = response[\"CiphertextBlob\"]' >> /home/ec2-user/key.py\n",
+                "echo '    return base64.b64encode(ciphertext)' >> /home/ec2-user/key.py\n",
+                "echo '' >> /home/ec2-user/key.py\n",
+                "echo '' >> /home/ec2-user/key.py\n",
+                "echo 'key = get_base64_key(sys.argv[1],sys.argv[2])' >> /home/ec2-user/key.py\n",
+                "echo 'print(key.decode(\"utf-8\"))' >> /home/ec2-user/key.py\n",
+                "\n",
+                "echo '[Bless Options]' > /home/ec2-user/bless/lambda_configs/bless_deploy.cfg\n",
+                "echo 'certificate_validity_after_seconds = 120' >> /home/ec2-user/bless/lambda_configs/bless_deploy.cfg\n",
+                "echo 'certificate_validity_before_seconds = 120' >> /home/ec2-user/bless/lambda_configs/bless_deploy.cfg\n",
+                "echo 'entropy_minimum_bits = 2048' >> /home/ec2-user/bless/lambda_configs/bless_deploy.cfg\n",
+                "echo 'random_seed_bytes = 256' >> /home/ec2-user/bless/lambda_configs/bless_deploy.cfg\n",
+                "echo 'logging_level = DEBUG' >> /home/ec2-user/bless/lambda_configs/bless_deploy.cfg\n",
+                "echo '' >> /home/ec2-user/bless/lambda_configs/bless_deploy.cfg\n",
+                "echo '[Bless CA]' >> /home/ec2-user/bless/lambda_configs/bless_deploy.cfg\n",
+                "echo '' >> /home/ec2-user/bless/lambda_configs/bless_deploy.cfg\n",
+                "echo -n '",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "_password = ' >> /home/ec2-user/bless/lambda_configs/bless_deploy.cfg\n",
+                "python3 /home/ec2-user/key.py ",
+                {
+                  "Ref": "KmsKey"
+                },
+                " password ",
+                {
+                  "Ref": "AWS::Region"
+                },
+                " >> /home/ec2-user/bless/lambda_configs/bless_deploy.cfg\n",
+                "echo 'ca_private_key_file = bless-ca-key' >> /home/ec2-user/bless/lambda_configs/bless_deploy.cfg\n",
+                "echo '' >> /home/ec2-user/bless/lambda_configs/bless_deploy.cfg\n",
+                "echo '[KMS Auth]' >> /home/ec2-user/bless/lambda_configs/bless_deploy.cfg\n",
+                "echo 'use_kmsauth = True' >> /home/ec2-user/bless/lambda_configs/bless_deploy.cfg\n",
+                "echo 'kmsauth_key_id = '",
+                {
+                  "Ref": "KmsKey"
+                },
+                " >> /home/ec2-user/bless/lambda_configs/bless_deploy.cfg\n",
+                "echo 'kmsauth_serviceid = bless' >> /home/ec2-user/bless/lambda_configs/bless_deploy.cfg\n",
+                "\n",
+                "cd /home/ec2-user/bless\n",
+                "echo '#!/usr/bin/env bash' > bash.sh\n",
+                "echo 'python3 -m venv venv' >> bash.sh\n",
+                "echo 'source venv/bin/activate' >> bash.sh\n",
+                "echo 'make develop' >> bash.sh\n",
+                "echo 'make test' >> bash.sh\n",
+                "echo '#/usr/local/bin/virtualenv /tmp/venv' >> bash.sh\n",
+                "echo '#/tmp/venv/bin/pip install --upgrade pip setuptools' >> bash.sh\n",
+                "echo '#/tmp/venv/bin/pip install -e .' >> bash.sh\n",
+                "echo '#unalias cp' >> bash.sh\n",
+                "echo '#cp -rf /tmp/venv/lib/python3.7/site-packages/. ./aws_lambda_libs' >> bash.sh\n",
+                "echo '#cp -rf /tmp/venv/lib64/python3.7/site-packages/. ./aws_lambda_libs' >> bash.sh\n",
+                "echo 'make lambda-deps' >> bash.sh\n",
+                "echo 'make publish' >> bash.sh\n",
+                "echo 'deactivate' >> bash.sh\n",
+                "echo -n 'aws s3 cp /home/ec2-user/bless/publish/bless_lambda.zip s3://' >> bash.sh\n",
+                "echo ",
+                {
+                  "Ref": "CopyBucket"
+                },
+                " >> bash.sh\n",
+                "echo '' >> bash.sh\n",
+                "echo -n 'aws s3 cp /home/ec2-user/bless/lambda_configs/bless-ca-key.pub s3://' >> bash.sh\n",
+                "echo ",
+                {
+                  "Ref": "CopyBucket"
+                },
+                "/ >> bash.sh\n",
+                "echo '' >> bash.sh\n",
+                "\n",
+                "echo -n '#{\"bastion_user\" : \"ec2-user\",\"bastion_user_ip\" : \"54.240.197.226\",",
+                "\"remote_usernames\" : \"Admin,alannewc,ec2-user\",\"bastion_ips\" : \"172.31.44.201\",",
+                "\"command\" : \"0.0.0.0/0\",\"public_key_to_sign\" : \"' >> bash.sh\n",
+                "cat /home/ec2-user/bless/lambda_configs/bless-ca-key.pub | tr -d '\n'>> bash.sh\n",
+                "echo '\"}' >> bash.sh\n",
+                "sed -i '/docker run --rm -it -v ${CURDIR}:\\/src -w \\/src amazonlinux:1 make compile/c\\\tdocker run --rm -v ${CURDIR}:\\/src -w \\/src amazonlinux:1 make compile' Makefile\n",
+                "chmod 777 bash.sh\n",
+                "/home/ec2-user/bless/bash.sh\n",
+                "\n",
+                "curl -X PUT -H 'Content-Type:' --data-binary '{\"Status\" : \"SUCCESS\",\"Reason\" : \"Configuration Complete\",\"UniqueId\" : \"ID1234\",\"Data\" : \"Application has completed configuration.\"}' \"",
+                {
+                  "Ref": "EC2WaitHandle"
+                },
+                "\"",
+                "\n",
+                "echo 'TrustedUserCAKeys /etc/ssh/cas.pub' >> /etc/ssh/sshd_config\n",
+                "touch /etc/ssh/cas.pub\n",
+                "chmod 600 /etc/ssh/cas.pub\n",
+                "aws s3 cp s3://",
+                {
+                  "Ref": "CopyBucket"
+                },
+                "/bless-ca-key.pub /home/ec2-user/\n",
+                "cat /home/ec2-user/bless-ca-key.pub >> /etc/ssh/cas.pub\n",
+                "service sshd restart\n",
+                "ssh-agent -s\n",
+                "cd /home/ec2-user/\n",
+                "git clone https://github.com/lyft/python-blessclient.git\n",
+                "echo '[MAIN]' >> /home/ec2-user/python-blessclient/blessclient.cfg\n",
+                "echo 'region_aliases: WEST' >> /home/ec2-user/python-blessclient/blessclient.cfg\n",
+                "echo 'kms_service_name: bless' >> /home/ec2-user/python-blessclient/blessclient.cfg\n",
+                "echo 'bastion_ips: 18.202.58.157,52.18.83.93' >> /home/ec2-user/python-blessclient/blessclient.cfg\n",
+                "echo '[CLIENT]' >> /home/ec2-user/python-blessclient/blessclient.cfg\n",
+                "echo 'domain_regex: (.*\\.somedomain\\.com||\\A10\\.100(?:\\.[0-9]{1,3}){2}\\Z)$' >> /home/ec2-user/python-blessclient/blessclient.cfg\n",
+                "echo 'cache_dir: .bless/session' >> /home/ec2-user/python-blessclient/blessclient.cfg\n",
+                "echo 'cache_file: bless_cache.json' >> /home/ec2-user/python-blessclient/blessclient.cfg\n",
+                "echo 'mfa_cache_dir: .aws/session' >> /home/ec2-user/python-blessclient/blessclient.cfg\n",
+                "echo 'mfa_cache_file: token_cache.json' >> /home/ec2-user/python-blessclient/blessclient.cfg\n",
+                "echo 'ip_urls: http://api.ipify.org, http://canihazip.com' >> /home/ec2-user/python-blessclient/blessclient.cfg\n",
+                "echo 'update_script: update_blessclient.sh' >> /home/ec2-user/python-blessclient/blessclient.cfg\n",
+                "echo '[LAMBDA]' >> /home/ec2-user/python-blessclient/blessclient.cfg\n",
+                "echo 'user_role: ",
+                {
+                  "Ref": "BlessInvokeRole"
+                },
+                "' >> /home/ec2-user/python-blessclient/blessclient.cfg\n",
+                "echo 'account_id: ",
+                {
+                  "Ref": "AWS::AccountId"
+                },
+                "' >> /home/ec2-user/python-blessclient/blessclient.cfg\n",
+                "echo 'functionname: ",
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Ref": "AWS::StackName"
+                      },
+                      "-BlessFunction"
+                    ]
+                  ]
+                },
+                "' >> /home/ec2-user/python-blessclient/blessclient.cfg\n",
+                "echo 'functionversion: $LATEST' >> /home/ec2-user/python-blessclient/blessclient.cfg\n",
+                "echo 'certlifetime: 30' >> /home/ec2-user/python-blessclient/blessclient.cfg\n",
+                "echo 'ipcachelifetime: 30' >> /home/ec2-user/python-blessclient/blessclient.cfg\n",
+                "echo 'timeout_connect: 5' >> /home/ec2-user/python-blessclient/blessclient.cfg\n",
+                "echo 'timeout_read: 10' >> /home/ec2-user/python-blessclient/blessclient.cfg\n",
+                "echo '[REGION_WEST]' >> /home/ec2-user/python-blessclient/blessclient.cfg\n",
+                "echo 'awsregion: ",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "' >> /home/ec2-user/python-blessclient/blessclient.cfg\n",
+                "echo 'kmsauthkey: ",
+                {
+                  "Ref": "KmsKey"
+                },
+                "' >> /home/ec2-user/python-blessclient/blessclient.cfg\n",
+                "/usr/bin/easy_install virtualenv\n",
+                "ssh-keygen -f /home/ec2-user/.ssh/blessid -b 4096 -t rsa -C 'Temporary key for BLESS certificate' -N ''\n",
+                "ssh-keygen -y -f /home/ec2-user/.ssh/blessid > ~/.ssh/blessid.pub\n",
+                "touch /home/ec2-user/.ssh/blessid-cert.pub\n",
+                "ln -s /home/ec2-user/.ssh/blessid-cert.pub /home/ec2-user/.ssh/blessid-cert\n",
+                "chmod 400 /home/ec2-user/.ssh/blessid\n",
+                "chmod 666 /home/ec2-user/.ssh/blessid-cert.pub\n",
+                "aws configure set aws_access_key_id ",
+                {
+                  "Ref": "AccessKey"
+                },
+                "\n",
+                "aws configure set aws_secret_access_key ",
+                {
+                  "Ref": "SecretAccessKey"
+                },
+                "\n",
+                "aws configure set region ",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "\n",
+                "cp -r /root/.aws /home/ec2-user/\n",
+                "chmod -R 775 /home/ec2-user/.aws\n",
+                "cd /home/ec2-user/python-blessclient\n",
+                "sudo make client\n",
+                "chown -R ec2-user:ec2-user /home/ec2-user\n",
+                "eval `ssh-agent -s`;ssh-add /home/ec2-user/.ssh/blessid\n",
+                "\n"
+              ]
+            ]
+          }
+        },
+        "NetworkInterfaces": [
+          {
+            "AssociatePublicIpAddress": "true",
+            "DeviceIndex": "0",
+            "GroupSet": [
+              {
+                "Ref": "MyEC2SecurityGroup"
+              }
+            ],
+            "SubnetId": {
+              "Ref": "ChosenSubnet"
+            }
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          },
+          {
+            "Key": "Project",
+            "Value": "EC2"
+          }
+        ]
+      }
+    },
+    "MyEC2Instance2": {
+      "DependsOn": "EC2WaitCondition",
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "BlockDeviceMappings": [
+          {
+            "DeviceName": "/dev/sdm",
+            "Ebs": {
+              "DeleteOnTermination": "true",
+              "VolumeSize": "10",
+              "VolumeType": "gp2"
+            }
+          }
+        ],
+        "IamInstanceProfile": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "AWS::StackName"
+              },
+              "-EC2Role"
+            ]
+          ]
+        },
+        "ImageId": {
+          "Fn::FindInMap": [
+            "RegionMap",
+            {
+              "Ref": "AWS::Region"
+            },
+            "HVM64"
+          ]
+        },
+        "InstanceType": "t2.micro",
+        "KeyName": {
+          "Ref": "EC2KeyPair"
+        },
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "#!/bin/bash -xe\n",
+                "echo 'TrustedUserCAKeys /etc/ssh/cas.pub' >> /etc/ssh/sshd_config\n",
+                "touch /etc/ssh/cas.pub\n",
+                "chmod 600 /etc/ssh/cas.pub\n",
+                "aws s3 cp s3://",
+                {
+                  "Ref": "CopyBucket"
+                },
+                "/bless-ca-key.pub /home/ec2-user/\n",
+                "cat /home/ec2-user/bless-ca-key.pub >> /etc/ssh/cas.pub\n",
+                "service sshd restart\n",
+                "ssh-agent -s\n",
+                "\n"
+              ]
+            ]
+          }
+        },
+        "NetworkInterfaces": [
+          {
+            "AssociatePublicIpAddress": "true",
+            "DeviceIndex": "0",
+            "GroupSet": [
+              {
+                "Ref": "MyEC2SecurityGroup"
+              }
+            ],
+            "SubnetId": {
+              "Ref": "ChosenSubnet"
+            }
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          },
+          {
+            "Key": "Project",
+            "Value": "EC2"
+          }
+        ]
+      }
+    },
+    "BlessLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "DependsOn": "EC2WaitCondition",
+      "Properties": {
+        "FunctionName": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "AWS::StackName"
+              },
+              "-BlessFunction"
+            ]
+          ]
+        },
+        "Handler": "bless_lambda.lambda_handler",
+        "Role": {
+          "Fn::GetAtt": [
+            "BlessLambdaRole",
+            "Arn"
+          ]
+        },
+        "Code": {
+          "S3Bucket": {
+            "Ref": "CopyBucket"
+          },
+          "S3Key": "bless_lambda.zip"
+        },
+        "Runtime": "python3.6",
+        "Timeout": "180",
+        "MemorySize": "1920"
+      },
+      "CreationPolicy": {
+        "ResourceSignal": {
+          "Count": "3",
+          "Timeout": "PT10M"
+        }
+      }
+    },
+    "CopyBucket": {
+      "Type": "AWS::S3::Bucket",
+      "DeletionPolicy": "Retain"
+    },
+    "MyEC2SecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "BLESS EC2 Security Group",
+        "VpcId": {
+          "Ref": "ChosenVPC"
+        }
+      }
+    },
+    "SGIngressRule1": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "DependsOn": "MyEC2SecurityGroup",
+      "Properties": {
+        "CidrIp": {
+          "Ref": "SSHnetwork"
+        },
+        "FromPort": "22",
+        "GroupId": {
+          "Ref": "MyEC2SecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "ToPort": "22"
+      }
+    },
+    "SGIngressRule2": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "DependsOn": "MyEC2SecurityGroup",
+      "Properties": {
+        "CidrIp": "0.0.0.0/0",
+        "FromPort": "80",
+        "GroupId": {
+          "Ref": "MyEC2SecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "ToPort": "80"
+      }
+    },
+    "SGIngressRule3": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "DependsOn": "MyEC2SecurityGroup",
+      "Properties": {
+        "CidrIp": "0.0.0.0/0",
+        "FromPort": "443",
+        "GroupId": {
+          "Ref": "MyEC2SecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "ToPort": "443"
+      }
+    },
+    "SGIngressRule4": {
+      "DependsOn": [
+        "MyEC2SecurityGroup",
+        "MyEC2Instance"
+      ],
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "CidrIp": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Fn::GetAtt": [
+                  "MyEC2Instance",
+                  "PublicIp"
+                ]
+              },
+              "/32"
+            ]
+          ]
+        },
+        "FromPort": "22",
+        "GroupId": {
+          "Ref": "MyEC2SecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "ToPort": "22"
+      }
+    },
+    "SGIngressRule5": {
+      "DependsOn": [
+        "MyEC2SecurityGroup",
+        "MyEC2Instance2"
+      ],
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "CidrIp": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Fn::GetAtt": [
+                  "MyEC2Instance2",
+                  "PublicIp"
+                ]
+              },
+              "/32"
+            ]
+          ]
+        },
+        "FromPort": "22",
+        "GroupId": {
+          "Ref": "MyEC2SecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "ToPort": "22"
+      }
+    },
+    "SGIngressRule6": {
+      "DependsOn": [
+        "MyEC2SecurityGroup"
+      ],
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "CidrIp": {
+          "Ref": "VCPCIDR"
+        },
+        "FromPort": "22",
+        "GroupId": {
+          "Ref": "MyEC2SecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "ToPort": "22"
+      }
+    },
+    "myKeyAlias": {
+      "Type": "AWS::KMS::Alias",
+      "Properties": {
+        "AliasName": {
+          "Fn::Join": [
+            "",
+            [
+              "alias/",
+              {
+                "Ref": "AWS::StackName"
+              },
+              "-",
+              {
+                "Ref": "KeyAlias"
+              }
+            ]
+          ]
+        },
+        "TargetKeyId": {
+          "Ref": "KmsKey"
+        }
+      }
+    },
+    "KmsKey": {
+      "Type": "AWS::KMS::Key",
+      "Properties": {
+        "KeyPolicy": {
+          "Version": "2012-10-17",
+          "Id": "key-default-1",
+          "Statement": [
+            {
+              "Sid": "Enable IAM User Permissions",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:iam::",
+                      {
+                        "Ref": "AWS::AccountId"
+                      },
+                      ":root"
+                    ]
+                  ]
+                }
+              },
+              "Action": "kms:*",
+              "Resource": "*"
+            }
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      }
+    },
+    "LambdaInvokePermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "BlessLambdaFunction"
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "ec2.amazonaws.com",
+        "SourceAccount": {
+          "Ref": "AWS::AccountId"
+        }
+      }
+    },
+    "BlessInvokeRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Principal": {
+                "AWS": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:iam::",
+                      {
+                        "Ref": "AWS::AccountId"
+                      },
+                      ":root"
+                    ]
+                  ]
+                }
+              },
+              "Effect": "Allow",
+              "Sid": ""
+            }
+          ]
+        },
+        "Path": "/"
+      }
+    },
+    "BlessInvokePolicy": {
+      "Type": "AWS::IAM::ManagedPolicy",
+      "Properties": {
+        "ManagedPolicyName": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "AWS::StackName"
+              },
+              "-BlessInvokePolicy",
+              {
+                "Ref": "AWS::Region"
+              }
+            ]
+          ]
+        },
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "",
+              "Effect": "Allow",
+              "Action": [
+                "lambda:InvokeFunction"
+              ],
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "BlessLambdaFunction",
+                    "Arn"
+                  ]
+                }
+              ]
+            },
+            {
+              "Sid": "",
+              "Effect": "Allow",
+              "Action": [
+                "iam:GetUser"
+              ],
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:iam::",
+                      {
+                        "Ref": "AWS::AccountId"
+                      },
+                      ":user/${aws:username}"
+                    ]
+                  ]
+                }
+              ]
+            },
+            {
+              "Sid": "AllowKMSEncryptIfMFAPresent",
+              "Action": "kms:Encrypt",
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "KmsKey",
+                    "Arn"
+                  ]
+                }
+              ],
+              "Condition": {
+                "StringEquals": {
+                  "kms:EncryptionContext:to": [
+                    "bless"
+                  ],
+                  "kms:EncryptionContext:user_type": "user",
+                  "kms:EncryptionContext:from": "${aws:username}"
+                },
+                "Bool": {
+                  "aws:MultiFactorAuthPresent": "true"
+                }
+              }
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "BlessInvokeRole"
+          }
+        ]
+      }
+    },
+    "BlessLambdaRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+                "AWS": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:sts::",
+                      {
+                        "Ref": "AWS::AccountId"
+                      },
+                      ":assumed-role/",
+                      {
+                        "Ref": "BlessInvokeRole"
+                      },
+                      "/mfaassume"
+                    ]
+                  ]
+                }
+              },
+              "Effect": "Allow",
+              "Sid": ""
+            }
+          ]
+        },
+        "Path": "/"
+      }
+    },
+    "BlessLambdaPolicy": {
+      "Type": "AWS::IAM::ManagedPolicy",
+      "Properties": {
+        "ManagedPolicyName": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "AWS::StackName"
+              },
+              "-BlessLambdaPolicy",
+              {
+                "Ref": "AWS::Region"
+              }
+            ]
+          ]
+        },
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Action": [
+                "kms:GenerateRandom",
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            },
+            {
+              "Sid": "AllowKMSDecryption",
+              "Effect": "Allow",
+              "Action": [
+                "kms:Decrypt",
+                "kms:DescribeKey"
+              ],
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "KmsKey",
+                    "Arn"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "BlessLambdaRole"
+          }
+        ]
+      }
+    },
+    "BlessKmsDecryptPolicy": {
+      "Type": "AWS::IAM::ManagedPolicy",
+      "Properties": {
+        "ManagedPolicyName": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "AWS::StackName"
+              },
+              "-BlessKmsDecryptPolicy",
+              {
+                "Ref": "AWS::Region"
+              }
+            ]
+          ]
+        },
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "AllowKMSDecryption",
+              "Effect": "Allow",
+              "Action": [
+                "kms:Decrypt",
+                "kms:DescribeKey"
+              ],
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "KmsKey",
+                    "Arn"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "BlessLambdaRole"
+          }
+        ]
+      }
+    },
+    "BlessAssumeInvokeRolePolicy": {
+      "Type": "AWS::IAM::ManagedPolicy",
+      "Properties": {
+        "ManagedPolicyName": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "AWS::StackName"
+              },
+              "-BlessAssumeInvokeRolePolicy",
+              {
+                "Ref": "AWS::Region"
+              }
+            ]
+          ]
+        },
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "AllowAssumeInvokeRole",
+              "Effect": "Allow",
+              "Action": [
+                "sts:AssumeRole"
+              ],
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "BlessInvokeRole",
+                    "Arn"
+                  ]
+                }
+              ]
+            },
+            {
+              "Sid": "AllowIndividualUserToListTheirOwnMFA",
+              "Effect": "Allow",
+              "Action": [
+                "iam:ListVirtualMFADevices",
+                "iam:ListMFADevices"
+              ],
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:iam::",
+                      {
+                        "Ref": "AWS::AccountId"
+                      },
+                      ":mfa/*"
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:iam::",
+                      {
+                        "Ref": "AWS::AccountId"
+                      },
+                      ":user/${aws:username}"
+                    ]
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "S3AccessRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "sts:AssumeRole"
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "ec2.amazonaws.com"
+                ]
+              }
+            }
+          ]
+        },
+        "Path": "/"
+      }
+    },
+    "S3InstanceProfile": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "InstanceProfileName": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "AWS::StackName"
+              },
+              "-EC2Role"
+            ]
+          ]
+        },
+        "Path": "/",
+        "Roles": [
+          {
+            "Ref": "S3AccessRole"
+          }
+        ]
+      }
+    },
+    "S3RolePolicies": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "s3:*",
+              "Effect": "Allow",
+              "Resource": "*"
+            },
+            {
+              "Action": "kms:*",
+              "Effect": "Allow",
+              "Resource": "*"
+            }
+          ]
+        },
+        "PolicyName": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "AWS::StackName"
+              },
+              "-EC2Policy"
+            ]
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "S3AccessRole"
+          }
+        ]
+      }
+    },
+    "EC2WaitHandle": {
+      "Type": "AWS::CloudFormation::WaitConditionHandle",
+      "Properties": {}
+    },
+    "EC2WaitCondition": {
+      "Type": "AWS::CloudFormation::WaitCondition",
+      "DependsOn": "MyEC2Instance",
+      "Properties": {
+        "Handle": {
+          "Ref": "EC2WaitHandle"
+        },
+        "Timeout": "4500"
+      }
+    }
+  },
+  "Outputs": {
+    "EC2DNSNameMain": {
+      "Description": "The DNSName of the Main EC2",
+      "Value": {
+        "Fn::Join": [
+          "",
+          [
+            "ssh -i KeyPair.pem ec2-user@",
+            {
+              "Fn::GetAtt": [
+                "MyEC2Instance",
+                "PublicDnsName"
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    "EC2DNSNameSecondary": {
+      "Description": "The DNSName of the Secondary EC2",
+      "Value": {
+        "Fn::Join": [
+          "",
+          [
+            "ssh -i KeyPair.pem ec2-user@",
+            {
+              "Fn::GetAtt": [
+                "MyEC2Instance2",
+                "PublicDnsName"
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    "S3BucketName": {
+      "Description": "The S3 bucket name",
+      "Value": {
+        "Ref": "CopyBucket"
+      }
+    },
+    "BlessInvokeRoleName": {
+      "Description": "The role name for BlessInvokeRole",
+      "Value": {
+        "Ref": "BlessInvokeRole"
+      }
+    },
+    "test": {
+      "Value": {
+        "Fn::GetAtt": [
+          "EC2WaitCondition",
+          "Data"
+        ]
+      },
+      "Description": "The data passed back as part of signalling the WaitCondition"
+    }
+  }
+}
