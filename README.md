@@ -34,26 +34,70 @@ You can refer to the [region table](https://aws.amazon.com/about-aws/global-infr
 
 Each of the following sections provides an implementation overview and detailed, step-by-step instructions. The overview should provide enough context for you to complete the implementation if you're already familiar with the AWS Management Console or you want to explore the services yourself without following a walk through.
 
-### 1. Launch CloudFormation template.
+### 1. Create a temporary IAM user.
+
+This demonstration does not follow best practices and a temporary IAM user should be made before running the CloudFormation template.  
+
+#### Instructions
+
+Use the IAM console to create a new user. Name it `ec2-user` and attach an administrator policy to the user.
+
+
+<details>
+<summary><strong>Step-by-step instructions (expand for details)</strong></summary><p>
+
+1. From the AWS console go to the IAM service.  One the left side of the screen, click **Users** and the click **Add User**.
+2. Give the user a name. For this project use `ec2-user` and select both **Programmatic access** and **AWS Management Console access**.  Give the user a password from *Console password* and check *Require password reset* if desired. Click **Next: Permissions**.
+3. Click **Attach existing Policies Directly** and select **AdministratorAccess**, click **Next: Review**.
+4.  Click **Create User** and log in as the new user.
+
+</p></details>
+
+### 2. Launch CloudFormation template.
 
 Launch one of these AWS CloudFormation templates in the Region of your choice.  Click on the drop down bellow to get details about what the CloudFormation template does.
 
 Region| Launch
 ------|-----
 US East (N. Virginia) | [![Launch Module 1 in us-east-1](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/images/cloudformation-launch-stack-button.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=BLESS&templateURL=https://s3.amazonaws.com/alangixxer-bless/bless-blessclient.json)
-US East (Ohio) | [![Launch Module 1 in us-east-2](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/images/cloudformation-launch-stack-button.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-2#/stacks/new?stackName=BLESS&templateURL=https://s3.amazonaws.com/alangixxer-bless/bless-blessclient.json)
-US West (Oregon) | [![Launch Module 1 in us-west-2](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/images/cloudformation-launch-stack-button.png)](https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/new?stackName=BLESS&templateURL=https://s3.amazonaws.com/alangixxer-bless/bless-blessclient.json)
-EU (Frankfurt) | [![Launch Module 1 in eu-central-1](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/images/cloudformation-launch-stack-button.png)](https://console.aws.amazon.com/cloudformation/home?region=eu-central-1#/stacks/new?stackName=BLESS&templateURL=https://s3.amazonaws.com/alangixxer-bless/bless-blessclient.json)
-EU (Ireland) | [![Launch Module 1 in eu-west-1](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/images/cloudformation-launch-stack-button.png)](https://console.aws.amazon.com/cloudformation/home?region=eu-west-1#/stacks/new?stackName=BLESS&templateURL=https://s3.amazonaws.com/alangixxer-bless/bless-blessclient.json)
-EU (London) | [![Launch Module 1 in eu-west-2](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/images/cloudformation-launch-stack-button.png)](https://console.aws.amazon.com/cloudformation/home?region=eu-west-2#/stacks/new?stackName=BLESS&templateURL=https://s3.amazonaws.com/alangixxer-bless/bless-blessclient.json)
-Asia Pacific (Tokyo) | [![Launch Module 1 in ap-northeast-1](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/images/cloudformation-launch-stack-button.png)](https://console.aws.amazon.com/cloudformation/home?region=ap-northeast-1#/stacks/new?stackName=BLESS&templateURL=https://s3.amazonaws.com/alangixxer-bless/bless-blessclient.json)
-Asia Pacific (Seoul) | [![Launch Module 1 in ap-northeast-2](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/images/cloudformation-launch-stack-button.png)](https://console.aws.amazon.com/cloudformation/home?region=ap-northeast-2#/stacks/new?stackName=BLESS&templateURL=https://s3.amazonaws.com/alangixxer-bless/bless-blessclient.json)
-Asia Pacific (Sydney) | [![Launch Module 1 in ap-southeast-2](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/images/cloudformation-launch-stack-button.png)](https://console.aws.amazon.com/cloudformation/home?region=ap-southeast-2#/stacks/new?stackName=BLESS&templateURL=https://s3.amazonaws.com/alangixxer-bless/bless-blessclient.json)
-Asia Pacific (Mumbai) | [![Launch Module 1 in ap-south-1](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/images/cloudformation-launch-stack-button.png)](https://console.aws.amazon.com/cloudformation/home?region=ap-south-1#/stacks/new?stackName=BLESS&templateURL=https://s3.amazonaws.com/alangixxer-bless/bless-blessclient.json)
+US East (Ohio) | [![Launch Module 1 in us-east-2](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/images/cloudformation-launch-stack-button.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-2#/stacks/new?stackName=BLESS&templateURL=https://s3.amazonaws.com/alangixxer-github/bless-blessclient.json)
+US West (Oregon) | [![Launch Module 1 in us-west-2](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/images/cloudformation-launch-stack-button.png)](https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/new?stackName=BLESS&templateURL=https://s3.amazonaws.com/alangixxer-github/bless-blessclient.json)
+EU (Frankfurt) | [![Launch Module 1 in eu-central-1](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/images/cloudformation-launch-stack-button.png)](https://console.aws.amazon.com/cloudformation/home?region=eu-central-1#/stacks/new?stackName=BLESS&templateURL=https://s3.amazonaws.com/alangixxer-github/bless-blessclient.json)
+EU (Ireland) | [![Launch Module 1 in eu-west-1](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/images/cloudformation-launch-stack-button.png)](https://console.aws.amazon.com/cloudformation/home?region=eu-west-1#/stacks/new?stackName=BLESS&templateURL=https://s3.amazonaws.com/alangixxer-github/bless-blessclient.json)
+EU (London) | [![Launch Module 1 in eu-west-2](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/images/cloudformation-launch-stack-button.png)](https://console.aws.amazon.com/cloudformation/home?region=eu-west-2#/stacks/new?stackName=BLESS&templateURL=https://s3.amazonaws.com/alangixxer-github/bless-blessclient.json)
+EU (Paris) | [![Launch Module 1 in eu-west-3](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/images/cloudformation-launch-stack-button.png)](https://console.aws.amazon.com/cloudformation/home?region=eu-west-3#/stacks/new?stackName=BLESS&templateURL=https://s3.amazonaws.com/alangixxer-github/bless-blessclient.json)
+Asia Pacific (Tokyo) | [![Launch Module 1 in ap-northeast-1](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/images/cloudformation-launch-stack-button.png)](https://console.aws.amazon.com/cloudformation/home?region=ap-northeast-1#/stacks/new?stackName=BLESS&templateURL=https://s3.amazonaws.com/alangixxer-github/bless-blessclient.json)
+Asia Pacific (Seoul) | [![Launch Module 1 in ap-northeast-2](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/images/cloudformation-launch-stack-button.png)](https://console.aws.amazon.com/cloudformation/home?region=ap-northeast-2#/stacks/new?stackName=BLESS&templateURL=https://s3.amazonaws.com/alangixxer-github/bless-blessclient.json)
+Asia Pacific (Sydney) | [![Launch Module 1 in ap-southeast-2](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/images/cloudformation-launch-stack-button.png)](https://console.aws.amazon.com/cloudformation/home?region=ap-southeast-2#/stacks/new?stackName=BLESS&templateURL=https://s3.amazonaws.com/alangixxer-github/bless-blessclient.json)
+Asia Pacific (Mumbai) | [![Launch Module 1 in ap-south-1](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/images/cloudformation-launch-stack-button.png)](https://console.aws.amazon.com/cloudformation/home?region=ap-south-1#/stacks/new?stackName=BLESS&templateURL=https://s3.amazonaws.com/alangixxer-github/bless-blessclient.json)
 
+Fill out the ClouFormation paramaters.
+<details>
+<summary><strong>Step-by-step instructions (expand for details)</strong></summary><p>
+
+1. Fill out the CoudFormation paramaters.
+- **Stack name**: Give a unique name.
+- **ChosenVPC**: Select a VPC where the EC2 instances will be placed.
+- **ChosenSubnet**: Select a Subnet where the EC2 instances will be placed, ensure that they are in the Chosen VPC.
+- **SSHnetwork**: Enter your IP.
+- **VCPCIDR**: Enter your selected VPC CIDR block.
+- **UseEC2KeyPair**: Select True or False to require a Key Pair. TODO
+- **EC2KeyPair**: Pick a Key Pair used to log into the Client EC2.
+- **KeyAlias**: Enter a Key Alias for the KMS key.
+- **KeyPwd**: Enter a password for the created Key Pair.
+- **NewUser**: Select a username to generate a new user. TODO
+- **DeploySecondEC2**: Select True or False to launch a second EC2. TODO
+- **AccessKey**: Enter an AWS Access Key.
+- **SecretAccessKey**: Enter an AWS Secret Access Key.
+
+ 2. Click **Next**.
+ 3. Add a tag if desired and click **Next**.
+ 4. Check **I acknowledge that AWS CloudFormation might create IAM resources with custom names.** and click **Create**.
+
+</p></details>
 
 <details>
-<summary><strong>Detailed Break Down (expand for details)</strong></summary><p>
+<summary><strong>Detailed Break Down of the CloudFormation template(expand for details)</strong></summary><p>
 
 #### 1. Two EC2 instances are created.
 - One instance will take place of a personal laptop.  The other instance will serve as "some other box" to SSH into.  The demonstration is done this way so it can be fully automated from one CloudFormation template.  The EC2 instances have permission to KMS decrypt and write/read to S3 which would not be needed for normal use.
@@ -205,7 +249,7 @@ Asia Pacific (Mumbai) | [![Launch Module 1 in ap-south-1](http://docs.aws.amazon
 
 ---
 
-### 2. SSH into the Client EC2 instance.
+### 3. SSH into the Client EC2 instance.
 
 From the CloudFormation stack Outputs section.  Copy the **EC2DNSNameMain** field into a terminal and SSH into the client EC2.
 
@@ -239,4 +283,3 @@ Make sure that you have the correct private key and your IP
 
 ## Finished
 You now SSH'd into an instance that did not require its own key pair!
-
