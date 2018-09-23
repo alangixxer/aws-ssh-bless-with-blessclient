@@ -13,8 +13,15 @@ In order to complete this project you will need an AWS Account with access to cr
 All of the resources you will launch as part of this workshop are eligible for the AWS free tier if your account is less than 12 months old. See the [AWS Free Tier page](https://aws.amazon.com/free/) for more details.
 
 The BLESS project is required and is located here: [Netflix  BLESS](https://github.com/Netflix/bless.git)
+
 The BLESS project is required and is located here: <a href="https://github.com/Netflix/bless.git" target="_blank">Netflix  BLESS</a>
+
+
+The BLESS project is required and is located here: <a href="#" onclick='window.open("https://github.com/Netflix/bless.git");return false;'></a>
+
+
 Lyft's BLESS client project is required and is located here: [Lyft - BLESS Client](https://github.com/lyft/python-blessclient)
+
 Lyft's BLESS client project is required and is located here: <a href="https://github.com/lyft/python-blessclient" target="_blank">Lyft - BLESS Client</a>
 
 Several of the IAM roles and policies used in this project was referenced from the following tutorial. It is recommend that it is looked over for a further understanding of how the policies work. https://www.tastycidr.net/a-practical-guide-to-deploying-netflixs-bless-certificate-authority/
@@ -50,14 +57,20 @@ Use the IAM console to create a new user. Name it `ec2-user` and attach an admin
 <summary><strong>Step-by-step instructions (expand for details)</strong></summary><p>
 
 1. From the AWS console, click on *services* and go to **IAM** under *Security, Identity & Compliance*.
+
 2. One the left side of the screen, click **Users** and the click **Add User**.
+
 3. Give the user a name. For this project use `ec2-user` and select both **Programmatic access** and **AWS Management Console access**.  Give the user a password from *Console password* and check *Require password reset* if desired. Click **Next: Permissions**.
 
 	><img src="IMAGES/img-1.png" alt="drawing" width="800px"/><br/>
 
+<br/>
+
 4. Click **Attach existing Policies Directly** and select **AdministratorAccess**, click **Next: Review**.
 
 	><img src="IMAGES/img-2.png" alt="drawing" width="800px"/><br/>
+
+<br/>
 
 5.  Click **Create User**, save the *Programmatic access credentials* and log in as the new user.
 
@@ -286,10 +299,7 @@ Make sure that you have the correct private key and your IP included in the secu
 5. Now run the SSH command like the example below.
 	`BLESS_COMPLETE=1 ssh ec2-user@172.31.14.85 -i ~/.ssh/blessid`
 
-
-
 </p></details>
-
 
 ---
 
