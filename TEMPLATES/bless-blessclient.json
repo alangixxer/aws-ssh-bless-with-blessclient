@@ -13,7 +13,6 @@
             "ChosenSubnet",
             "SSHnetwork",
             "VCPCIDR",
-            "UseEC2KeyPair",
             "EC2KeyPair"
           ]
         },
@@ -75,15 +74,6 @@
       "MinLength": "1",
       "MaxLength": "64",
       "AllowedPattern": "^[a-zA-Z0-9]*$"
-    },
-    "UseEC2KeyPair": {
-      "AllowedValues": [
-        "True",
-        "False"
-      ],
-      "Default": "True",
-      "Description": "To include a Key Pair for the EC2 instances, set this parameter to true",
-      "Type": "String"
     },
     "DeploySecondEC2": {
       "AllowedValues": [
@@ -161,6 +151,16 @@
       }
     }
   },
+  "Conditions": {
+    "CreateSecondEC2": {
+      "Fn::Equals": [
+        {
+          "Ref": "DeploySecondEC2"
+        },
+        "True"
+      ]
+    }
+  },
   "Resources": {
     "MyEC2Instance": {
       "Type": "AWS::EC2::Instance",
@@ -205,6 +205,9 @@
               "",
               [
                 "#!/bin/bash -xe\n",
+                "\n",
+                "echo 'Installing packages, this should be done using meta-data'\n",
+                "\n",
                 "yum update -y\n",
                 "yum install python3 -y\n",
                 "yum install gcc -y\n",
@@ -226,23 +229,16 @@
                 "yum install docker -y\n",
                 "service docker start\n",
                 "usermod -a -G docker ec2-user\n",
+                "\n",
+                "echo 'Installing terraform and terragrunt, only needed if following the tutorial refernced'\n",
                 "wget https://releases.hashicorp.com/terraform/0.11.8/terraform_0.11.8_linux_amd64.zip\n",
                 "unzip terraform_0.11.8_linux_amd64.zip\n",
                 "mv terraform /usr/local/bin/\n",
                 "wget https://github.com/gruntwork-io/terragrunt/releases/download/v0.16.8/terragrunt_linux_amd64\n",
                 "mv terragrunt_linux_amd64 /usr/local/bin/terragrunt\n",
                 "chmod 775 /usr/local/bin/terragrunt\n",
-                "cd /home/ec2-user/\n",
-                "git clone https://github.com/Netflix/bless.git\n",
-                "mkdir -m755 bless/lambda_configs\n",
-                "cd /home/ec2-user/bless\n",
-                "cd lambda_configs\n",
-                "ssh-keygen -t rsa -b 4096 -f bless-ca-key -C 'SSH CA Key' -N '",
-                {
-                  "Ref": "KeyPwd"
-                },
-                "'\n",
-                "chmod 444 bless-ca-key\n",
+                "\n",
+                "echo 'Create a new user and adding to sudo group, only needed if you cant use ec2-user as a user'\n",
                 "adduser ",
                 {
                   "Ref": "NewUser"
@@ -263,31 +259,62 @@
                   "Ref": "NewUser"
                 },
                 "/.ssh\n",
-                "touch /home/alannewc/.ssh/authorized_keys\n",
-                "chmod 600 /home/alannewc/.ssh/authorized_keys\n",
-                "cat /home/ec2-user/.ssh/authorized_keys >> /home/alannewc/.ssh/authorized_keys\n",
-                "chown alannewc:alannewc /home/alannewc/.ssh\n",
-                "chown alannewc:alannewc /home/alannewc/.ssh/authorized_keys\n",
-                "cd /home/",
+                "touch /home/",
                 {
                   "Ref": "NewUser"
                 },
+                "/.ssh/authorized_keys\n",
+                "chmod 600 /home/",
+                {
+                  "Ref": "NewUser"
+                },
+                "/.ssh/authorized_keys\n",
+                "cat /home/ec2-user/.ssh/authorized_keys >> /home/",
+                {
+                  "Ref": "NewUser"
+                },
+                "/.ssh/authorized_keys\n",
+                "chown ",
+                {
+                  "Ref": "NewUser"
+                },
+                ":",
+                {
+                  "Ref": "NewUser"
+                },
+                " /home/",
+                {
+                  "Ref": "NewUser"
+                },
+                "/.ssh\n",
+                "chown ",
+                {
+                  "Ref": "NewUser"
+                },
+                ":",
+                {
+                  "Ref": "NewUser"
+                },
+                " /home/",
+                {
+                  "Ref": "NewUser"
+                },
+                "/.ssh/authorized_keys\n",
                 "\n",
+                "echo 'Downloading bless to ec2-user'\n",
+                "cd /home/ec2-user/\n",
                 "git clone https://github.com/Netflix/bless.git\n",
-                "mkdir -m755 bless/lambda_configs\n",
-                "echo '1: cd bless' > /home/ec2-user/steps.txt\n",
-                "echo '2: sudo su' >> /home/ec2-user/steps.txt\n",
-                "echo '3: python3 -m venv venv' >> /home/ec2-user/steps.txt\n",
-                "echo '4: source venv/bin/activate' >> /home/ec2-user/steps.txt\n",
-                "echo '5: make develop' >> /home/ec2-user/steps.txt\n",
-                "echo '6: make test' >> /home/ec2-user/steps.txt\n",
-                "echo '7: make lambda-deps' >> /home/ec2-user/steps.txt\n",
-                "echo '8: exit env' >> /home/ec2-user/steps.txt\n",
-                "echo '9:' >> /home/ec2-user/steps.txt\n",
-                "echo '10: ssh-keygen -t rsa -b 4096 -f bless-ca- -C \"SSH CA Key\"' >> /home/ec2-user/steps.txt\n",
-                "echo '10a: enter passphrase for step 9' >> /home/ec2-user/steps.txt\n",
-                "echo '11: ' >> /home/ec2-user/steps.txt\n",
-                "echo '' >> /home/ec2-user/steps.txt\n",
+                "\n",
+                "echo 'Adding RSA key and bless config file'\n",
+                "mkdir -m755 /home/ec2-user/bless/lambda_configs\n",
+                "cd /home/ec2-user/bless/lambda_configs\n",
+                "ssh-keygen -t rsa -b 4096 -f bless-ca-key -C 'SSH CA Key' -N '",
+                {
+                  "Ref": "KeyPwd"
+                },"'\n",
+                "chmod 444 /home/ec2-user/bless/lambda_configs/bless-ca-key\n",
+                "\n",
+                "echo 'Creating a python3 script to encrypt the key password'\n",
                 "echo '#!/usr/bin/env python3' > /home/ec2-user/key.py\n",
                 "echo 'import boto3' >> /home/ec2-user/key.py\n",
                 "echo 'import decode' >> /home/ec2-user/key.py\n",
@@ -310,6 +337,7 @@
                 "echo 'key = get_base64_key(sys.argv[1],sys.argv[2])' >> /home/ec2-user/key.py\n",
                 "echo 'print(key.decode(\"utf-8\"))' >> /home/ec2-user/key.py\n",
                 "\n",
+                "echo 'Creating bless config file'\n",
                 "echo '[Bless Options]' > /home/ec2-user/bless/lambda_configs/bless_deploy.cfg\n",
                 "echo 'certificate_validity_after_seconds = 120' >> /home/ec2-user/bless/lambda_configs/bless_deploy.cfg\n",
                 "echo 'certificate_validity_before_seconds = 120' >> /home/ec2-user/bless/lambda_configs/bless_deploy.cfg\n",
@@ -345,53 +373,62 @@
                 "echo 'kmsauth_serviceid = bless' >> /home/ec2-user/bless/lambda_configs/bless_deploy.cfg\n",
                 "\n",
                 "cd /home/ec2-user/bless\n",
-                "echo '#!/usr/bin/env bash' > bash.sh\n",
-                "echo 'python3 -m venv venv' >> bash.sh\n",
-                "echo 'source venv/bin/activate' >> bash.sh\n",
-                "echo 'make develop' >> bash.sh\n",
-                "echo 'make test' >> bash.sh\n",
-                "echo '#/usr/local/bin/virtualenv /tmp/venv' >> bash.sh\n",
-                "echo '#/tmp/venv/bin/pip install --upgrade pip setuptools' >> bash.sh\n",
-                "echo '#/tmp/venv/bin/pip install -e .' >> bash.sh\n",
-                "echo '#unalias cp' >> bash.sh\n",
-                "echo '#cp -rf /tmp/venv/lib/python3.7/site-packages/. ./aws_lambda_libs' >> bash.sh\n",
-                "echo '#cp -rf /tmp/venv/lib64/python3.7/site-packages/. ./aws_lambda_libs' >> bash.sh\n",
-                "echo 'make lambda-deps' >> bash.sh\n",
-                "echo 'make publish' >> bash.sh\n",
-                "echo 'deactivate' >> bash.sh\n",
-                "echo -n 'aws s3 cp /home/ec2-user/bless/publish/bless_lambda.zip s3://' >> bash.sh\n",
+                "echo 'Creating bash.sh which will install bless and bless client'\n",
+                "echo '#!/usr/bin/env bash' > /home/ec2-user/bless/bash.sh\n",
+                "echo 'python3 -m venv venv' >> /home/ec2-user/bless/bash.sh\n",
+                "echo 'source venv/bin/activate' >> /home/ec2-user/bless/bash.sh\n",
+                "echo 'make develop' >> /home/ec2-user/bless/bash.sh\n",
+                "echo 'make test' >> /home/ec2-user/bless/bash.sh\n",
+                "echo '#/usr/local/bin/virtualenv /tmp/venv' >> /home/ec2-user/bless/bash.sh\n",
+                "echo '#/tmp/venv/bin/pip install --upgrade pip setuptools' >> /home/ec2-user/bless/bash.sh\n",
+                "echo '#/tmp/venv/bin/pip install -e .' >> /home/ec2-user/bless/bash.sh\n",
+                "echo '#unalias cp' >> /home/ec2-user/bless/bash.sh\n",
+                "echo '#cp -rf /tmp/venv/lib/python3.7/site-packages/. ./aws_lambda_libs' >> /home/ec2-user/bless/bash.sh\n",
+                "echo '#cp -rf /tmp/venv/lib64/python3.7/site-packages/. ./aws_lambda_libs' >> /home/ec2-user/bless/bash.sh\n",
+                "echo 'make lambda-deps' >> /home/ec2-user/bless/bash.sh\n",
+                "echo 'make publish' >> /home/ec2-user/bless/bash.sh\n",
+                "echo 'deactivate' >> /home/ec2-user/bless/bash.sh\n",
+                "echo -n 'aws s3 cp /home/ec2-user/bless/publish/bless_lambda.zip s3://' >> /home/ec2-user/bless/bash.sh\n",
                 "echo ",
                 {
                   "Ref": "CopyBucket"
                 },
-                " >> bash.sh\n",
-                "echo '' >> bash.sh\n",
-                "echo -n 'aws s3 cp /home/ec2-user/bless/lambda_configs/bless-ca-key.pub s3://' >> bash.sh\n",
+                " >> /home/ec2-user/bless/bash.sh\n",
+                "echo '' >> /home/ec2-user/bless/bash.sh\n",
+                "echo -n 'aws s3 cp /home/ec2-user/bless/lambda_configs/bless-ca-key.pub s3://' >> /home/ec2-user/bless/bash.sh\n",
                 "echo ",
                 {
                   "Ref": "CopyBucket"
                 },
-                "/ >> bash.sh\n",
-                "echo '' >> bash.sh\n",
+                "/ >> /home/ec2-user/bless/bash.sh\n",
+                "echo '' >> /home/ec2-user/bless/bash.sh\n",
                 "\n",
                 "echo -n '#{\"bastion_user\" : \"ec2-user\",\"bastion_user_ip\" : \"54.240.197.226\",",
                 "\"remote_usernames\" : \"Admin,alannewc,ec2-user\",\"bastion_ips\" : \"172.31.44.201\",",
-                "\"command\" : \"0.0.0.0/0\",\"public_key_to_sign\" : \"' >> bash.sh\n",
-                "cat /home/ec2-user/bless/lambda_configs/bless-ca-key.pub | tr -d '\n'>> bash.sh\n",
-                "echo '\"}' >> bash.sh\n",
+                "\"command\" : \"0.0.0.0/0\",\"public_key_to_sign\" : \"' >> /home/ec2-user/bless/bash.sh\n",
+                "cat /home/ec2-user/bless/lambda_configs/bless-ca-key.pub | tr -d '\n'>> /home/ec2-user/bless/bash.sh\n",
+                "echo '\"}' >> /home/ec2-user/bless/bash.sh\n",
+                "\n",
+                "echo 'changing Makefile to run without interaction'\n",
                 "sed -i '/docker run --rm -it -v ${CURDIR}:\\/src -w \\/src amazonlinux:1 make compile/c\\\tdocker run --rm -v ${CURDIR}:\\/src -w \\/src amazonlinux:1 make compile' Makefile\n",
-                "chmod 777 bash.sh\n",
+                "\n",
+                "chmod 777 /home/ec2-user/bless/bash.sh\n",
+                "echo 'Executing /home/ec2-user/bless/bash.sh'\n",
                 "/home/ec2-user/bless/bash.sh\n",
                 "\n",
+                "echo 'Sending WaitCondition command to CloudFormation'\n",
                 "curl -X PUT -H 'Content-Type:' --data-binary '{\"Status\" : \"SUCCESS\",\"Reason\" : \"Configuration Complete\",\"UniqueId\" : \"ID1234\",\"Data\" : \"Application has completed configuration.\"}' \"",
                 {
                   "Ref": "EC2WaitHandle"
                 },
                 "\"",
                 "\n",
+                "echo 'Adding the option to be a server that a clinet can SSH into'\n",
                 "echo 'TrustedUserCAKeys /etc/ssh/cas.pub' >> /etc/ssh/sshd_config\n",
                 "touch /etc/ssh/cas.pub\n",
                 "chmod 600 /etc/ssh/cas.pub\n",
+                "\n",
+                "echo 'Coping the public key from s3, needed if a laptop is the client'\n",
                 "aws s3 cp s3://",
                 {
                   "Ref": "CopyBucket"
@@ -399,9 +436,14 @@
                 "/bless-ca-key.pub /home/ec2-user/\n",
                 "cat /home/ec2-user/bless-ca-key.pub >> /etc/ssh/cas.pub\n",
                 "service sshd restart\n",
-                "ssh-agent -s\n",
+                "\n",
+                "#ssh-agent -s\n",
+                "\n",
+                "echo 'Installing bless client'\n",
                 "cd /home/ec2-user/\n",
                 "git clone https://github.com/lyft/python-blessclient.git\n",
+                "\n",
+                "echo 'Creating blessclient config file'\n",
                 "echo '[MAIN]' >> /home/ec2-user/python-blessclient/blessclient.cfg\n",
                 "echo 'region_aliases: WEST' >> /home/ec2-user/python-blessclient/blessclient.cfg\n",
                 "echo 'kms_service_name: bless' >> /home/ec2-user/python-blessclient/blessclient.cfg\n",
@@ -461,6 +503,7 @@
                 "ln -s /home/ec2-user/.ssh/blessid-cert.pub /home/ec2-user/.ssh/blessid-cert\n",
                 "chmod 400 /home/ec2-user/.ssh/blessid\n",
                 "chmod 666 /home/ec2-user/.ssh/blessid-cert.pub\n",
+                "echo 'Setting aws credintials, this is not good practice; for demonstration only, not production'\n",
                 "aws configure set aws_access_key_id ",
                 {
                   "Ref": "AccessKey"
@@ -482,6 +525,7 @@
                 "sudo make client\n",
                 "chown -R ec2-user:ec2-user /home/ec2-user\n",
                 "eval `ssh-agent -s`;ssh-add /home/ec2-user/.ssh/blessid\n",
+                "echo 'EC2 one complete'\n",
                 "\n"
               ]
             ]
@@ -516,6 +560,7 @@
       }
     },
     "MyEC2Instance2": {
+      "Condition": "CreateSecondEC2",
       "DependsOn": "EC2WaitCondition",
       "Type": "AWS::EC2::Instance",
       "Properties": {
@@ -569,7 +614,8 @@
                 "/bless-ca-key.pub /home/ec2-user/\n",
                 "cat /home/ec2-user/bless-ca-key.pub >> /etc/ssh/cas.pub\n",
                 "service sshd restart\n",
-                "ssh-agent -s\n",
+                "#ssh-agent -s\n",
+                "echo 'EC2 two complete'\n",
                 "\n"
               ]
             ]

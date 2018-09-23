@@ -8,22 +8,25 @@ The application uses [AWS Identity and Access Management (IAM)](https://aws.amaz
 
 ### AWS Account
 
-In order to complete this workshop you will need an AWS Account with access to create AWS IAM, and EC2 resources. The code and instructions in this workshop assume only one student is using a given AWS account at a time and to a user that has CLI access. If you try sharing an account with another student, you'll run into naming conflicts for certain resources. You can work around these by appending a unique suffix to the resources that fail to create due to conflicts, but the instructions do not provide details on the changes required to make this work.
+In order to complete this project you will need an AWS Account with access to create AWS IAM, and other AWS resources at an administrator level.
 
 All of the resources you will launch as part of this workshop are eligible for the AWS free tier if your account is less than 12 months old. See the [AWS Free Tier page](https://aws.amazon.com/free/) for more details.
 
-The BLESS project is required and is located here: [Netflix  BLESS](https://github.com/Netflix/bless.git)  
+The BLESS project is required and is located here: [Netflix  BLESS](https://github.com/Netflix/bless.git)
+The BLESS project is required and is located here: <a href="https://github.com/Netflix/bless.git" target="_blank">Netflix  BLESS</a>
 Lyft's BLESS client project is required and is located here: [Lyft - BLESS Client](https://github.com/lyft/python-blessclient)
+Lyft's BLESS client project is required and is located here: <a href="https://github.com/lyft/python-blessclient" target="_blank">Lyft - BLESS Client</a>
 
-Severial of my IAM roles and policies used in this project was referenced from the following tutorial. https://www.tastycidr.net/a-practical-guide-to-deploying-netflixs-bless-certificate-authority/
+Several of the IAM roles and policies used in this project was referenced from the following tutorial. It is recommend that it is looked over for a further understanding of how the policies work. https://www.tastycidr.net/a-practical-guide-to-deploying-netflixs-bless-certificate-authority/
 
-WARNING: This guide is for demonstration purposes only and should be executed with a temporary account user.  Putting AWS Credentials into CloudFormation is dangerous and should not be done.
+WARNING: This guide is for demonstration purposes only and should be executed with a temporary account user.  Putting AWS Credentials into CloudFormation is potentially dangerous and should be done cautiously.  This demonstration is used to show the functionality of BLESS and BLESS Client.  Normally the Client computer would be a personal workstation and now an EC2 instance.
 
 ### Region Selection
 
 This workshop can be deployed in any AWS region that supports the following services:
 
 - AWS KMS
+- AWS Lambda
 - Amazon EC2
 - AWS CloudFormation
 
@@ -36,26 +39,35 @@ Each of the following sections provides an implementation overview and detailed,
 
 ### 1. Create a temporary IAM user.
 
-This demonstration does not follow best practices and a temporary IAM user should be made before running the CloudFormation template.  
+This demonstration is not intended to be used at a production level and a temporary IAM user should be made before running the CloudFormation template.  
 
 #### Instructions
 
-Use the IAM console to create a new user. Name it `ec2-user` and attach an administrator policy to the user.
+Use the IAM console to create a new user. Name it `ec2-user` and attach an administrator policy to the user.  Bless Client is made to use the same user name on the EC2 instances and the AWS account user name.  Creating a user as described above will simplify the process.
 
 
 <details>
 <summary><strong>Step-by-step instructions (expand for details)</strong></summary><p>
 
-1. From the AWS console go to the IAM service.  One the left side of the screen, click **Users** and the click **Add User**.
-2. Give the user a name. For this project use `ec2-user` and select both **Programmatic access** and **AWS Management Console access**.  Give the user a password from *Console password* and check *Require password reset* if desired. Click **Next: Permissions**.
-3. Click **Attach existing Policies Directly** and select **AdministratorAccess**, click **Next: Review**.
-4.  Click **Create User** and log in as the new user.
+1. From the AWS console, click on *services* and go to **IAM** under *Security, Identity & Compliance*.
+2. One the left side of the screen, click **Users** and the click **Add User**.
+3. Give the user a name. For this project use `ec2-user` and select both **Programmatic access** and **AWS Management Console access**.  Give the user a password from *Console password* and check *Require password reset* if desired. Click **Next: Permissions**.
+
+	><img src="IMAGES/img-1.png" alt="drawing" width="800px"/><br/>
+
+4. Click **Attach existing Policies Directly** and select **AdministratorAccess**, click **Next: Review**.
+
+	><img src="IMAGES/img-2.png" alt="drawing" width="800px"/><br/>
+
+5.  Click **Create User**, save the *Programmatic access credentials* and log in as the new user.
 
 </p></details>
 
 ### 2. Launch CloudFormation template.
 
-Launch one of these AWS CloudFormation templates in the Region of your choice.  Click on the drop down bellow to get details about what the CloudFormation template does.
+Launch one of these AWS CloudFormation templates in the Region of your choice.  Ensure that the region has the required resources.  Click on the drop down bellow to get details about what the CloudFormation template does in the background.
+
+**Notice**: Currently this is only working for us-west-2 and us-west-1 regions.  A fix will be added shortly.
 
 Region| Launch
 ------|-----
@@ -76,23 +88,22 @@ Fill out the ClouFormation paramaters.
 <summary><strong>Step-by-step instructions (expand for details)</strong></summary><p>
 
 1. Fill out the CoudFormation paramaters.
-- **Stack name**: Give a unique name.
-- **ChosenVPC**: Select a VPC where the EC2 instances will be placed.
-- **ChosenSubnet**: Select a Subnet where the EC2 instances will be placed, ensure that they are in the Chosen VPC.
-- **SSHnetwork**: Enter your IP.
-- **VCPCIDR**: Enter your selected VPC CIDR block.
-- **UseEC2KeyPair**: Select True or False to require a Key Pair. TODO
-- **EC2KeyPair**: Pick a Key Pair used to log into the Client EC2.
-- **KeyAlias**: Enter a Key Alias for the KMS key.
-- **KeyPwd**: Enter a password for the created Key Pair.
-- **NewUser**: Select a username to generate a new user. TODO
-- **DeploySecondEC2**: Select True or False to launch a second EC2. TODO
-- **AccessKey**: Enter an AWS Access Key.
-- **SecretAccessKey**: Enter an AWS Secret Access Key.
+	> **Stack name**: Give a unique name.
+	>**ChosenVPC**: Select a VPC where the EC2 instances will be placed.
+	> **ChosenSubnet**: Select a Subnet where the EC2 instances will be placed, ensure that they are in the Chosen VPC.
+	> **SSHnetwork**: Enter your IP.
+	> **VCPCIDR**: Enter your selected VPC CIDR block.
+	> **EC2KeyPair**: Pick a Key Pair used to log into the Client EC2.
+	> **KeyAlias**: Enter a Key Alias for the KMS key.
+	> **KeyPwd**: Enter a password for the created Key Pair.
+	> **NewUser**: Select a username to generate a new user.
+	> **DeploySecondEC2**: Select True or False to launch a second EC2.
+	> **AccessKey**: Enter an AWS Access Key.
+	> **SecretAccessKey**: Enter an AWS Secret Access Key.
 
  2. Click **Next**.
  3. Add a tag if desired and click **Next**.
- 4. Check **I acknowledge that AWS CloudFormation might create IAM resources with custom names.** and click **Create**.
+ 4. Check *I acknowledge that AWS CloudFormation might create IAM resources with custom names.* and click **Create**.
 
 </p></details>
 
@@ -100,9 +111,11 @@ Fill out the ClouFormation paramaters.
 <summary><strong>Detailed Break Down of the CloudFormation template(expand for details)</strong></summary><p>
 
 #### 1. Two EC2 instances are created.
-- One instance will take place of a personal laptop.  The other instance will serve as "some other box" to SSH into.  The demonstration is done this way so it can be fully automated from one CloudFormation template.  The EC2 instances have permission to KMS decrypt and write/read to S3 which would not be needed for normal use.
+
+- The first created instance will take place of a personal laptop (client workstation).  The second instance will serve as "some other box within AWS" to SSH into.  The demonstration is done this way so it can be fully automated from one CloudFormation template.  The EC2 instances have permission to KMS decrypt and write/read to S3 which would not be needed required for normal use.
 
 #### 2. Two IAM roles are created; **BlessLambdaRole** and **BlessInvokeRole.**
+
 - BlessLambdaRole has the following trust relationship.
 	```json
 	{
@@ -239,10 +252,12 @@ Fill out the ClouFormation paramaters.
 	```
 - More information about these Roles and Policies can be found from the initial referenced [tutorial](https://www.tastycidr.net/a-practical-guide-to-deploying-netflixs-bless-certificate-authority/).  
 
-#### 3.  BLESS is installed on the EC2 instance.
+#### 3.  BLESS is installed on the Client EC2 instance.
+
 - Follow [Netflix  BLESS](https://github.com/Netflix/bless.git) guide.
 
-#### 4. BLESS Clinet is install on the EC2 instnace.
+#### 4. BLESS Client is install on the Client EC2 instnace.
+
 - Follow [Lyft - BLESS Client](https://github.com/lyft/python-blessclient) guide.
 
 </p></details>
@@ -253,9 +268,7 @@ Fill out the ClouFormation paramaters.
 
 From the CloudFormation stack Outputs section.  Copy the **EC2DNSNameMain** field into a terminal and SSH into the client EC2.
 
-Make sure that you have the correct private key and your IP
-
-
+Make sure that you have the correct private key and your IP included in the security group.
 
 
 <details>
@@ -264,10 +277,13 @@ Make sure that you have the correct private key and your IP
 1. Once SSH'd into the EC2.  Change directory to the installed Bless Client.
 	`cd /home/ec2-user/python-blessclient`
 
-2. Run the following command to get a signed certificate.
+2. Run the SSH command like the example below. This should not work.
+	`ssh ec2-user@172.31.14.85 -i ~/.ssh/blessid`
+
+4. Run the following command to get a signed certificate.
 	``eval `ssh-agent -s`;./blessclient.run --region WEST``
 
-3. Now run the SSH command like the example below.
+5. Now run the SSH command like the example below.
 	`BLESS_COMPLETE=1 ssh ec2-user@172.31.14.85 -i ~/.ssh/blessid`
 
 
@@ -275,11 +291,8 @@ Make sure that you have the correct private key and your IP
 </p></details>
 
 
-
-
-
-
 ---
 
 ## Finished
 You now SSH'd into an instance that did not require its own key pair!
+
