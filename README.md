@@ -93,18 +93,18 @@ Fill out the ClouFormation paramaters.
 
 1. Fill out the CoudFormation paramaters.
 
-	> **Stack name**: Give a unique name.
-	>**ChosenVPC**: Select a VPC where the EC2 instances will be placed.
-	> **ChosenSubnet**: Select a Subnet where the EC2 instances will be placed, ensure that they are in the Chosen VPC.
-	> **SSHnetwork**: Enter your IP.
-	> **VCPCIDR**: Enter your selected VPC CIDR block.
-	> **EC2KeyPair**: Pick a Key Pair used to log into the Client EC2.
-	> **KeyAlias**: Enter a Key Alias for the KMS key.
-	> **KeyPwd**: Enter a password for the created Key Pair.
-	> **NewUser**: Select a username to generate a new user.
-	> **DeploySecondEC2**: Select True or False to launch a second EC2.
-	> **AccessKey**: Enter an AWS Access Key.
-	> **SecretAccessKey**: Enter an AWS Secret Access Key.
+	> **Stack name**: Give a unique name.</br>
+	>**ChosenVPC**: Select a VPC where the EC2 instances will be placed.</br>
+	> **ChosenSubnet**: Select a Subnet where the EC2 instances will be placed, ensure that they are in the Chosen VPC.</br>
+	> **SSHnetwork**: Enter your IP.</br>
+	> **VCPCIDR**: Enter your selected VPC CIDR block.</br>
+	> **EC2KeyPair**: Pick a Key Pair used to log into the Client EC2.</br>
+	> **KeyAlias**: Enter a Key Alias for the KMS key.</br>
+	> **KeyPwd**: Enter a password for the created Key Pair.</br>
+	> **NewUser**: Select a username to generate a new user.</br>
+	> **DeploySecondEC2**: Select True or False to launch a second EC2.</br>
+	> **AccessKey**: Enter an AWS Access Key.</br>
+	> **SecretAccessKey**: Enter an AWS Secret Access Key.</br>
 
 </br>
 
