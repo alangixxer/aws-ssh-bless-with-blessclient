@@ -10,23 +10,15 @@ The application uses [AWS Identity and Access Management (IAM)](https://aws.amaz
 
 In order to complete this project you will need an AWS Account with access to create AWS IAM, and other AWS resources at an administrator level.
 
-All of the resources you will launch as part of this workshop are eligible for the AWS free tier if your account is less than 12 months old. See the [AWS Free Tier page](https://aws.amazon.com/free/) for more details.
-
 The BLESS project is required and is located here: [Netflix  BLESS](https://github.com/Netflix/bless.git)
-
-The BLESS project is required and is located here: <a href="https://github.com/Netflix/bless.git" target="_blank">Netflix  BLESS</a>
-
-
-The BLESS project is required and is located here: <a href="#" onclick='window.open("https://github.com/Netflix/bless.git");return false;'>Netflix  BLESS</a>
-
 
 Lyft's BLESS client project is required and is located here: [Lyft - BLESS Client](https://github.com/lyft/python-blessclient)
 
-Lyft's BLESS client project is required and is located here: <a href="https://github.com/lyft/python-blessclient" target="_blank">Lyft - BLESS Client</a>
-
 Several of the IAM roles and policies used in this project was referenced from the following tutorial. It is recommend that it is looked over for a further understanding of how the policies work. https://www.tastycidr.net/a-practical-guide-to-deploying-netflixs-bless-certificate-authority/
 
-WARNING: This guide is for demonstration purposes only and should be executed with a temporary account user.  Putting AWS Credentials into CloudFormation is potentially dangerous and should be done cautiously.  This demonstration is used to show the functionality of BLESS and BLESS Client.  Normally the Client computer would be a personal workstation and now an EC2 instance.
+All of the resources you will launch as part of this workshop are eligible for the AWS free tier if your account is less than 12 months old. See the [AWS Free Tier page](https://aws.amazon.com/free/) for more details.
+
+**WARNING**: This guide is for demonstration purposes only and should be executed with a temporary account user.  Putting AWS Credentials into CloudFormation is potentially dangerous and should be done cautiously.  This demonstration is used to show the functionality of BLESS and BLESS Client.  Normally the Client computer would be a personal workstation and now an EC2 instance.
 
 ### Region Selection
 
