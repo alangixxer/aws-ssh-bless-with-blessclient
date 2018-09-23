@@ -271,9 +271,9 @@ Fill out the ClouFormation paramaters.
 
 ### 3. SSH into the Client EC2 instance.
 
-From the CloudFormation stack Outputs section.  Copy the **EC2DNSNameMain** field into a terminal and SSH into the client EC2.
+From the CloudFormation stack Outputs section.  Copy the **EC2DNSNameFirstEC2** field into a terminal and SSH into the client EC2.
 
-Make sure that you have the correct private key and your IP included in the security group.
+Make sure that you have the correct private key and your IP included in the security group.  Helper commands are also included in the CloudFormation output section as well.
 
 
 <details>
@@ -285,10 +285,10 @@ Make sure that you have the correct private key and your IP included in the secu
 2. Run the SSH command like the example below. This should not work.
 	`ssh ec2-user@172.31.14.85 -i ~/.ssh/blessid`
 
-4. Run the following command to get a signed certificate.
+3. Run the following command to get a signed certificate.
 	``eval `ssh-agent -s`;./blessclient.run --region WEST``
 
-5. Now run the SSH command like the example below.
+4. Now run the SSH command like the example below.
 	`BLESS_COMPLETE=1 ssh ec2-user@172.31.14.85 -i ~/.ssh/blessid`
 
 </p></details>

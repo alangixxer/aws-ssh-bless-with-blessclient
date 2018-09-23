@@ -311,7 +311,8 @@
                 "ssh-keygen -t rsa -b 4096 -f bless-ca-key -C 'SSH CA Key' -N '",
                 {
                   "Ref": "KeyPwd"
-                },"'\n",
+                },
+                "'\n",
                 "chmod 444 /home/ec2-user/bless/lambda_configs/bless-ca-key\n",
                 "\n",
                 "echo 'Creating a python3 script to encrypt the key password'\n",
@@ -1314,13 +1315,17 @@
     }
   },
   "Outputs": {
-    "EC2DNSNameMain": {
-      "Description": "The DNSName of the Main EC2",
+    "EC2DNSNameFirstEC2": {
+      "Description": "The DNSName of the First EC2 or client",
       "Value": {
         "Fn::Join": [
           "",
           [
-            "ssh -i KeyPair.pem ec2-user@",
+            "ssh -i ",
+            {
+              "Ref": "EC2KeyPair"
+            },
+            " ec2-user@",
             {
               "Fn::GetAtt": [
                 "MyEC2Instance",
@@ -1331,13 +1336,17 @@
         ]
       }
     },
-    "EC2DNSNameSecondary": {
-      "Description": "The DNSName of the Secondary EC2",
+    "EC2DNSNameSecondE2": {
+      "Description": "The DNSName of the Second EC2",
       "Value": {
         "Fn::Join": [
           "",
           [
-            "ssh -i KeyPair.pem ec2-user@",
+            "ssh -i ",
+            {
+              "Ref": "EC2KeyPair"
+            },
+            " ec2-user@",
             {
               "Fn::GetAtt": [
                 "MyEC2Instance2",
@@ -1360,14 +1369,43 @@
         "Ref": "BlessInvokeRole"
       }
     },
-    "test": {
+    "PublicBashCommand": {
       "Value": {
-        "Fn::GetAtt": [
-          "EC2WaitCondition",
-          "Data"
+        "Fn::Join": [
+          "",
+          [
+            "eval `ssh-agent -s`;./blessclient.run --region WEST;",
+            "BLESS_COMPLETE=1 ssh ec2-user@",
+            {
+              "Fn::GetAtt": [
+                "MyEC2Instance2",
+                "PublicIp"
+              ]
+            },
+            " -i ~/.ssh/blessid"
+          ]
         ]
       },
-      "Description": "The data passed back as part of signalling the WaitCondition"
+      "Description": "Command to SSH into the second EC2"
+    },
+    "PrivateBashCommand": {
+      "Value": {
+        "Fn::Join": [
+          "",
+          [
+            "eval `ssh-agent -s`;./blessclient.run --region WEST;",
+            "BLESS_COMPLETE=1 ssh ec2-user@",
+            {
+              "Fn::GetAtt": [
+                "MyEC2Instance2",
+                "PrivateIp"
+              ]
+            },
+            " -i ~/.ssh/blessid"
+          ]
+        ]
+      },
+      "Description": "Command to SSH into the second EC2"
     }
   }
 }
