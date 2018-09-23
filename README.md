@@ -17,7 +17,7 @@ The BLESS project is required and is located here: [Netflix  BLESS](https://gith
 The BLESS project is required and is located here: <a href="https://github.com/Netflix/bless.git" target="_blank">Netflix  BLESS</a>
 
 
-The BLESS project is required and is located here: <a href="#" onclick='window.open("https://github.com/Netflix/bless.git");return false;'></a>
+The BLESS project is required and is located here: <a href="#" onclick='window.open("https://github.com/Netflix/bless.git");return false;'>Netflix  BLESS</a>
 
 
 Lyft's BLESS client project is required and is located here: [Lyft - BLESS Client](https://github.com/lyft/python-blessclient)
